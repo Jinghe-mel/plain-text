@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plain Text</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/marked@14.1.0/marked.min.js"></script>
+<style>
+:root{
+  --bg:#fff;--bg2:#f8f9fa;--fg:#202124;--fg2:#5f6368;--fg3:#9aa0a6;
+  --border:#dadce0;--border2:#ebebeb;--accent:#1a73e8;--hover:#f1f3f4;
+  --code-bg:#e8eaed;--shadow:rgba(0,0,0,.12);
+}
+[data-theme="dark"]{
+  --bg:#1e1e1e;--bg2:#252526;--fg:#d4d4d4;--fg2:#9e9e9e;--fg3:#6e6e6e;
+  --border:#3c3c3c;--border2:#333;--accent:#6eb5ff;--hover:#2d2d2d;
+  --code-bg:#2d2d2d;--shadow:rgba(0,0,0,.4);
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Google Sans','Noto Sans',Arial,sans-serif;background:var(--bg);color:var(--fg);min-height:100vh;transition:background .2s,color .2s}
+
+/* Header */
+.header{display:flex;align-items:center;height:56px;padding:0 24px;border-bottom:1px solid var(--border);gap:12px}
+.logo{font-size:20px;font-weight:500;color:var(--fg2);user-select:none}.logo b{color:var(--accent);font-weight:500}
+.subtitle{font-size:13px;color:var(--fg3);user-select:none;flex:1}
+.header-btns{display:flex;align-items:center;gap:4px}
+
+/* Theme & History toggle */
+.icon-btn{background:none;border:none;cursor:pointer;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;transition:background .15s;color:var(--fg2);font-size:18px}
+.icon-btn:hover{background:var(--hover)}
+
+/* Tabs */
+.tabs{display:flex;max-width:1400px;margin:0 auto;padding:16px 24px 0}
+.tab{padding:10px 20px;font-size:14px;font-weight:500;font-family:inherit;color:var(--fg2);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;transition:color .15s,border-color .15s;user-select:none}
+.tab:hover{color:var(--fg)}.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+
+/* Main */
+.main{max-width:1400px;margin:0 auto;padding:12px 24px 48px}
+.mode{display:none}.mode.active{display:block}
+
+/* Box */
+.box-wrap{position:relative;border:1px solid var(--border);border-radius:8px;overflow:hidden;background:var(--bg)}
+.dual{display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;min-height:400px;background:var(--bg)}
+.dual .col{flex:1;display:flex;flex-direction:column;min-width:0;position:relative}
+.dual .col+.col{border-left:1px solid var(--border)}
+.col-head{padding:10px 20px 6px;min-height:40px;display:flex;align-items:center;justify-content:space-between}
+.col-label{font-size:13px;font-weight:500;user-select:none}
+.col-label.src{color:var(--accent)}.col-label.out{color:var(--fg2)}
+
+textarea.src-input{
+  flex:1;border:none;outline:none;resize:none;padding:14px 24px;
+  font-family:'Roboto Mono','Courier New',monospace;font-size:15px;line-height:1.65;
+  color:var(--fg);background:transparent;min-height:340px;width:100%;
+}
+textarea.src-input::placeholder{color:var(--fg3)}
+.render-out{
+  flex:1;padding:14px 24px;font-size:17px;line-height:1.6;color:var(--fg);
+  background:var(--bg2);overflow-y:auto;min-height:340px;user-select:text;
+}
+.render-out:empty::before{content:attr(data-placeholder);color:var(--fg3)}
+.strip-input{
+  width:100%;border:none;outline:none;resize:none;padding:20px 24px;
+  font-size:18px;line-height:1.6;color:var(--fg);min-height:340px;background:transparent;
+  font-family:'Google Sans','Noto Sans',Arial,sans-serif;
+}
+.strip-input::placeholder{color:var(--fg3)}
+
+/* Rendered content */
+.render-out h1,.render-out h2,.render-out h3,.render-out h4{margin:.6em 0 .3em}
+.render-out h1{font-size:1.5em}.render-out h2{font-size:1.3em}.render-out h3{font-size:1.15em}
+.render-out p{margin:.4em 0}
+.render-out ul,.render-out ol{margin:.4em 0 .4em 1.5em}
+.render-out li{margin:.2em 0}
+.render-out pre{background:var(--code-bg);padding:12px 16px;border-radius:6px;overflow-x:auto;margin:.5em 0;font-size:14px}
+.render-out code{background:var(--code-bg);padding:2px 5px;border-radius:3px;font-size:.88em;font-family:'Roboto Mono','Courier New',monospace}
+.render-out pre code{background:none;padding:0}
+.render-out blockquote{border-left:3px solid var(--border);padding-left:12px;color:var(--fg2);margin:.5em 0}
+.render-out table{border-collapse:collapse;margin:.5em 0}
+.render-out th,.render-out td{border:1px solid var(--border);padding:6px 12px;text-align:left}
+.render-out th{background:var(--hover);font-weight:600}
+.render-out a{color:var(--accent)}.render-out img{max-width:100%}
+.render-out hr{border:none;border-top:1px solid var(--border);margin:1em 0}
+.render-out .katex-display{margin:.8em 0;overflow-x:auto;overflow-y:hidden}
+
+/* Stats bar */
+.stats{padding:4px 24px 6px;font-size:12px;color:var(--fg3);user-select:none;border-top:1px solid var(--border2);display:flex;gap:16px}
+
+/* Drop overlay */
+.drop-overlay{
+  position:absolute;inset:0;background:rgba(26,115,232,.08);border:2px dashed var(--accent);
+  border-radius:8px;display:flex;align-items:center;justify-content:center;
+  font-size:16px;color:var(--accent);font-weight:500;z-index:10;pointer-events:none;
+  opacity:0;transition:opacity .15s;
+}
+.drop-overlay.show{opacity:1}
+
+/* Buttons */
+.btn{background:none;border:none;cursor:pointer;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;transition:background .15s;color:var(--fg2)}
+.btn:hover{background:var(--hover)}.btn svg{width:18px;height:18px;fill:currentColor}
+.btn-t{border-radius:16px;width:auto;padding:0 10px;font-size:12px;font-family:inherit;gap:5px;color:var(--fg2);height:30px}
+.btn-t.copied{color:var(--accent)}
+.btn-t svg{width:15px;height:15px}
+
+.strip-btns{position:absolute;top:8px;right:8px;z-index:2;display:flex;gap:4px;opacity:0;pointer-events:none;transition:opacity .15s}
+.box-wrap.has .strip-btns{opacity:1;pointer-events:auto}
+.col .corner-copy{position:absolute;top:8px;right:8px;z-index:2;opacity:0;pointer-events:none;transition:opacity .15s}
+.col.has-out .corner-copy{opacity:1;pointer-events:auto}
+.col .corner-clear{position:absolute;top:8px;right:8px;z-index:2;opacity:0;pointer-events:none;transition:opacity .15s}
+.col.has-in .corner-clear{opacity:1;pointer-events:auto}
+
+/* History panel */
+.history-panel{
+  position:fixed;top:0;right:-380px;width:380px;height:100%;background:var(--bg);
+  border-left:1px solid var(--border);box-shadow:-4px 0 24px var(--shadow);
+  z-index:100;transition:right .25s ease;display:flex;flex-direction:column;
+}
+.history-panel.open{right:0}
+.history-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border)}
+.history-head h3{font-size:16px;font-weight:500;color:var(--fg)}
+.history-list{flex:1;overflow-y:auto;padding:8px 0}
+.history-item{
+  padding:12px 20px;cursor:pointer;border-bottom:1px solid var(--border2);
+  transition:background .1s;
+}
+.history-item:hover{background:var(--hover)}
+.history-item-mode{font-size:11px;font-weight:600;color:var(--accent);text-transform:uppercase;margin-bottom:4px}
+.history-item-preview{font-size:13px;color:var(--fg2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.history-item-time{font-size:11px;color:var(--fg3);margin-top:4px}
+.history-item-actions{float:right;margin-top:-30px}
+.history-empty{padding:40px 20px;text-align:center;color:var(--fg3);font-size:14px}
+.history-foot{padding:12px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end}
+.history-foot button{font-family:inherit;font-size:13px;color:#d93025;background:none;border:none;cursor:pointer;padding:6px 12px;border-radius:6px;transition:background .15s}
+.history-foot button:hover{background:rgba(217,48,37,.08)}
+.backdrop{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:99;opacity:0;pointer-events:none;transition:opacity .2s}
+.backdrop.show{opacity:1;pointer-events:auto}
+
+@media(max-width:768px){
+  .dual{flex-direction:column}
+  .dual .col+.col{border-left:none;border-top:1px solid var(--border)}
+  textarea.src-input,.render-out,.strip-input{min-height:200px;font-size:15px}
+  .history-panel{width:100%;right:-100%}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo"><b>Plain</b> Text</div>
+  <div class="subtitle" id="sub">Paste anything, get clean text</div>
+  <div class="header-btns">
+    <button class="icon-btn" id="historyToggle" title="History">🕘</button>
+    <button class="icon-btn" id="themeToggle" title="Toggle dark mode">🌙</button>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" data-m="strip">Strip Formatting</button>
+  <button class="tab" data-m="latex">LaTeX → Rendered</button>
+  <button class="tab" data-m="md">Markdown → Rendered</button>
+</div>
+
+<div class="main">
+
+  <!-- STRIP -->
+  <div class="mode active" id="m-strip">
+    <div class="box-wrap" id="strip-wrap">
+      <div class="drop-overlay" id="strip-drop">Drop file here</div>
+      <textarea class="strip-input" id="strip-in" placeholder="Paste formatted text here — all formatting will be removed&#10;&#10;You can also drag & drop a text file" spellcheck="false"></textarea>
+      <div class="strip-btns">
+        <button class="btn btn-t" id="strip-copy" title="Copy"><svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg><span>Copy</span></button>
+        <button class="btn" id="strip-clr" title="Clear"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button>
+      </div>
+      <div class="stats" id="strip-stats"></div>
+    </div>
+  </div>
+
+  <!-- LATEX -->
+  <div class="mode" id="m-latex">
+    <div class="dual" id="latex-dual">
+      <div class="drop-overlay" id="latex-drop">Drop .tex file here</div>
+      <div class="col" id="latex-in-col">
+        <div class="col-head"><span class="col-label src">LaTeX Source</span></div>
+        <textarea class="src-input" id="latex-in" placeholder="Type or paste LaTeX here…&#10;&#10;Example:&#10;$$E = mc^2$$&#10;&#10;\section{Hello}&#10;This is \textbf{bold} and $\alpha + \beta$.&#10;&#10;You can also drag & drop a .tex file" spellcheck="false"></textarea>
+        <div class="stats" id="latex-stats"></div>
+        <button class="btn corner-clear" id="latex-clr" title="Clear"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button>
+      </div>
+      <div class="col" id="latex-out-col">
+        <div class="col-head"><span class="col-label out">Rendered</span></div>
+        <div class="render-out" id="latex-out" data-placeholder="Rendered output will appear here"></div>
+        <button class="btn btn-t corner-copy" id="latex-copy" title="Copy"><svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg><span>Copy</span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MARKDOWN -->
+  <div class="mode" id="m-md">
+    <div class="dual" id="md-dual">
+      <div class="drop-overlay" id="md-drop">Drop .md file here</div>
+      <div class="col" id="md-in-col">
+        <div class="col-head"><span class="col-label src">Markdown Source</span></div>
+        <textarea class="src-input" id="md-in" placeholder="Type or paste Markdown here…&#10;&#10;Supports LaTeX math: $E=mc^2$ or $$\sum_{i=1}^{n} x_i$$&#10;&#10;# Heading&#10;**bold** and *italic*&#10;- list item&#10;&#10;You can also drag & drop a .md file" spellcheck="false"></textarea>
+        <div class="stats" id="md-stats"></div>
+        <button class="btn corner-clear" id="md-clr" title="Clear"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button>
+      </div>
+      <div class="col" id="md-out-col">
+        <div class="col-head"><span class="col-label out">Rendered</span></div>
+        <div class="render-out" id="md-out" data-placeholder="Rendered output will appear here"></div>
+        <button class="btn btn-t corner-copy" id="md-copy" title="Copy"><svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg><span>Copy</span></button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- History panel -->
+<div class="backdrop" id="backdrop"></div>
+<div class="history-panel" id="historyPanel">
+  <div class="history-head">
+    <h3>History</h3>
+    <button class="icon-btn" id="historyClose" title="Close">✕</button>
+  </div>
+  <div class="history-list" id="historyList"></div>
+  <div class="history-foot">
+    <button id="historyClearAll">Clear all history</button>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+/* ── Theme ── */
+const html = document.documentElement;
+const themeBtn = document.getElementById('themeToggle');
+const saved = localStorage.getItem('pt-theme');
+if (saved === 'dark' || (!saved && matchMedia('(prefers-color-scheme:dark)').matches)) {
+  html.dataset.theme = 'dark'; themeBtn.textContent = '☀️';
+}
+themeBtn.addEventListener('click', () => {
+  const dark = html.dataset.theme === 'dark';
+  html.dataset.theme = dark ? '' : 'dark';
+  themeBtn.textContent = dark ? '🌙' : '☀️';
+  localStorage.setItem('pt-theme', dark ? 'light' : 'dark');
+});
+
+/* ── Tabs ── */
+const tabs = document.querySelectorAll('.tab');
+const modesMap = { strip: document.getElementById('m-strip'), latex: document.getElementById('m-latex'), md: document.getElementById('m-md') };
+const subs = { strip:'Paste anything, get clean text', latex:'Paste LaTeX source, see rendered output', md:'Paste Markdown source, see rendered output' };
+const subEl = document.getElementById('sub');
+let currentMode = 'strip';
+tabs.forEach(t => t.addEventListener('click', () => {
+  tabs.forEach(x => x.classList.remove('active')); t.classList.add('active');
+  Object.values(modesMap).forEach(c => c.classList.remove('active'));
+  currentMode = t.dataset.m;
+  modesMap[currentMode].classList.add('active');
+  subEl.textContent = subs[currentMode];
+}));
+
+/* ── Helpers ── */
+function copyText(text, btn) {
+  if (!text.trim()) return;
+  navigator.clipboard.writeText(text).catch(() => {
+    const ta = document.createElement('textarea'); ta.value = text;
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta);
+  });
+  const s = btn.querySelector('span');
+  if (s) { s.textContent = 'Copied!'; btn.classList.add('copied');
+    setTimeout(() => { s.textContent = 'Copy'; btn.classList.remove('copied'); }, 1500); }
+}
+
+function countStats(text) {
+  if (!text.trim()) return '';
+  const chars = text.length;
+  const words = text.trim().split(/\s+/).filter(Boolean).length;
+  const lines = text.split('\n').length;
+  return `${chars.toLocaleString()} chars · ${words.toLocaleString()} words · ${lines.toLocaleString()} lines`;
+}
+
+function debounce(fn, ms) {
+  let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); };
+}
+
+/* ── History ── */
+const HISTORY_KEY = 'pt-history';
+const MAX_HISTORY = 30;
+function getHistory() { try { return JSON.parse(localStorage.getItem(HISTORY_KEY)) || []; } catch { return []; } }
+function saveHistory(mode, text) {
+  if (!text.trim()) return;
+  const list = getHistory();
+  // Don't duplicate if same as most recent
+  if (list.length && list[0].text === text && list[0].mode === mode) return;
+  list.unshift({ mode, text: text.substring(0, 5000), time: Date.now() });
+  if (list.length > MAX_HISTORY) list.length = MAX_HISTORY;
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(list));
+}
+
+const historyPanel = document.getElementById('historyPanel');
+const backdrop = document.getElementById('backdrop');
+const historyList = document.getElementById('historyList');
+
+function openHistory() { historyPanel.classList.add('open'); backdrop.classList.add('show'); renderHistory(); }
+function closeHistory() { historyPanel.classList.remove('open'); backdrop.classList.remove('show'); }
+document.getElementById('historyToggle').addEventListener('click', openHistory);
+document.getElementById('historyClose').addEventListener('click', closeHistory);
+backdrop.addEventListener('click', closeHistory);
+
+function renderHistory() {
+  const list = getHistory();
+  if (!list.length) { historyList.innerHTML = '<div class="history-empty">No history yet.<br>Your pastes will appear here.</div>'; return; }
+  historyList.innerHTML = list.map((h, i) => {
+    const d = new Date(h.time);
+    const time = d.toLocaleDateString('en-US', { month:'short', day:'numeric' }) + ' · ' + d.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' });
+    const labels = { strip:'Strip', latex:'LaTeX', md:'Markdown' };
+    const preview = h.text.substring(0, 120).replace(/\n/g, ' ');
+    return `<div class="history-item" data-i="${i}">
+      <div class="history-item-mode">${labels[h.mode] || h.mode}</div>
+      <div class="history-item-preview">${preview}</div>
+      <div class="history-item-time">${time}</div>
+    </div>`;
+  }).join('');
+  historyList.querySelectorAll('.history-item').forEach(el => {
+    el.addEventListener('click', () => {
+      const h = list[parseInt(el.dataset.i)];
+      // Switch to correct tab
+      tabs.forEach(t => {
+        t.classList.toggle('active', t.dataset.m === h.mode);
+      });
+      Object.values(modesMap).forEach(c => c.classList.remove('active'));
+      currentMode = h.mode;
+      modesMap[currentMode].classList.add('active');
+      subEl.textContent = subs[currentMode];
+      // Fill input
+      const inputMap = { strip: stripIn, latex: latexIn, md: mdIn };
+      inputMap[h.mode].value = h.text;
+      inputMap[h.mode].dispatchEvent(new Event('input'));
+      closeHistory();
+    });
+  });
+}
+
+document.getElementById('historyClearAll').addEventListener('click', () => {
+  if (confirm('Clear all history?')) {
+    localStorage.removeItem(HISTORY_KEY);
+    renderHistory();
+  }
+});
+
+/* ── Auto-save (debounced) ── */
+const autoSave = debounce((mode, text) => {
+  saveHistory(mode, text);
+  // Also save current draft
+  localStorage.setItem('pt-draft-' + mode, text);
+}, 2000);
+
+/* ── Restore drafts ── */
+function restoreDraft(mode, textarea) {
+  const d = localStorage.getItem('pt-draft-' + mode);
+  if (d) { textarea.value = d; textarea.dispatchEvent(new Event('input')); }
+}
+
+/* ── Drag & Drop ── */
+function setupDrop(container, overlay, textarea) {
+  let dragCount = 0;
+  container.addEventListener('dragenter', e => { e.preventDefault(); dragCount++; overlay.classList.add('show'); });
+  container.addEventListener('dragleave', e => { e.preventDefault(); dragCount--; if (dragCount <= 0) { overlay.classList.remove('show'); dragCount = 0; } });
+  container.addEventListener('dragover', e => e.preventDefault());
+  container.addEventListener('drop', e => {
+    e.preventDefault(); overlay.classList.remove('show'); dragCount = 0;
+    const file = e.dataTransfer.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => { textarea.value = reader.result; textarea.dispatchEvent(new Event('input')); };
+      reader.readAsText(file);
+    }
+  });
+}
+
+/* ══════════════════════════════════════
+   STRIP
+   ══════════════════════════════════════ */
+const stripIn = document.getElementById('strip-in');
+const stripWrap = document.getElementById('strip-wrap');
+const stripStats = document.getElementById('strip-stats');
+
+stripIn.addEventListener('paste', e => {
+  e.preventDefault();
+  const plain = (e.clipboardData || window.clipboardData).getData('text/plain');
+  const ta = e.target, s = ta.selectionStart, ed = ta.selectionEnd;
+  ta.value = ta.value.substring(0, s) + plain + ta.value.substring(ed);
+  ta.selectionStart = ta.selectionEnd = s + plain.length;
+  ta.dispatchEvent(new Event('input'));
+});
+stripIn.addEventListener('input', debounce(() => {
+  stripWrap.classList.toggle('has', stripIn.value.length > 0);
+  stripStats.textContent = countStats(stripIn.value);
+  autoSave('strip', stripIn.value);
+}, 150));
+// Also update immediately for UI responsiveness
+stripIn.addEventListener('input', () => {
+  stripWrap.classList.toggle('has', stripIn.value.length > 0);
+  stripStats.textContent = countStats(stripIn.value);
+});
+document.getElementById('strip-clr').addEventListener('click', () => {
+  stripIn.value = ''; stripWrap.classList.remove('has'); stripStats.textContent = '';
+  localStorage.removeItem('pt-draft-strip'); stripIn.focus();
+});
+document.getElementById('strip-copy').addEventListener('click', function() { copyText(stripIn.value, this); });
+setupDrop(stripWrap, document.getElementById('strip-drop'), stripIn);
+
+/* ══════════════════════════════════════
+   LATEX → Rendered
+   ══════════════════════════════════════ */
+const latexIn = document.getElementById('latex-in');
+const latexOut = document.getElementById('latex-out');
+const latexInCol = document.getElementById('latex-in-col');
+const latexOutCol = document.getElementById('latex-out-col');
+const latexStats = document.getElementById('latex-stats');
+
+function renderLatex(src) {
+  if (!src.trim()) return '';
+  const mathSlots = [];
+  let s = src;
+  s = s.replace(/\$\$([\s\S]*?)\$\$/g, (_, tex) => { mathSlots.push({ display:true, tex }); return `\x00M${mathSlots.length-1}\x00`; });
+  s = s.replace(/\\\[([\s\S]*?)\\\]/g, (_, tex) => { mathSlots.push({ display:true, tex }); return `\x00M${mathSlots.length-1}\x00`; });
+  s = s.replace(/(?<!\$)\$(?!\$)([^\n]*?)\$/g, (_, tex) => { mathSlots.push({ display:false, tex }); return `\x00M${mathSlots.length-1}\x00`; });
+  s = s.replace(/\\\((.*?)\\\)/g, (_, tex) => { mathSlots.push({ display:false, tex }); return `\x00M${mathSlots.length-1}\x00`; });
+  s = s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  s = s.replace(/\\documentclass(\[.*?\])?\{.*?\}/g,'');
+  s = s.replace(/\\usepackage(\[.*?\])?\{.*?\}/g,'');
+  s = s.replace(/\\begin\{document\}|\\end\{document\}|\\maketitle/g,'');
+  s = s.replace(/\\title\{(.*?)\}/g,'<h1>$1</h1>');
+  s = s.replace(/\\author\{(.*?)\}/g,'<div style="color:var(--fg2);margin-bottom:.5em"><em>$1</em></div>');
+  s = s.replace(/\\date\{.*?\}/g,'');
+  s = s.replace(/\\section\*?\{(.*?)\}/g,'<h2>$1</h2>');
+  s = s.replace(/\\subsection\*?\{(.*?)\}/g,'<h3>$1</h3>');
+  s = s.replace(/\\subsubsection\*?\{(.*?)\}/g,'<h4>$1</h4>');
+  s = s.replace(/\\paragraph\{(.*?)\}/g,'<p><strong>$1</strong> ');
+  s = s.replace(/\\textbf\{(.*?)\}/g,'<strong>$1</strong>');
+  s = s.replace(/\\textit\{(.*?)\}/g,'<em>$1</em>');
+  s = s.replace(/\\emph\{(.*?)\}/g,'<em>$1</em>');
+  s = s.replace(/\\underline\{(.*?)\}/g,'<u>$1</u>');
+  s = s.replace(/\\texttt\{(.*?)\}/g,'<code>$1</code>');
+  s = s.replace(/\\text\{(.*?)\}/g,'$1');
+  s = s.replace(/\\href\{(.*?)\}\{(.*?)\}/g,'<a href="$1" target="_blank">$2</a>');
+  s = s.replace(/\\begin\{itemize\}/g,'<ul>');
+  s = s.replace(/\\end\{itemize\}/g,'</ul>');
+  s = s.replace(/\\begin\{enumerate\}/g,'<ol>');
+  s = s.replace(/\\end\{enumerate\}/g,'</ol>');
+  s = s.replace(/\\item\s*/g,'<li>');
+  s = s.replace(/\\begin\{verbatim\}([\s\S]*?)\\end\{verbatim\}/g,'<pre><code>$1</code></pre>');
+  s = s.replace(/\\begin\{(center|abstract|quote|quotation)\}/g,'<blockquote>');
+  s = s.replace(/\\end\{(center|abstract|quote|quotation)\}/g,'</blockquote>');
+  s = s.replace(/\\begin\{.*?\}/g,'');
+  s = s.replace(/\\end\{.*?\}/g,'');
+  s = s.replace(/\\\\/g,'<br>');
+  s = s.replace(/\\newline/g,'<br>');
+  s = s.replace(/\\(noindent|hfill|clearpage|newpage|bigskip|medskip|smallskip)\b/g,'');
+  s = s.replace(/\\vspace\{.*?\}/g,'<br>');
+  s = s.replace(/\\hspace\{.*?\}/g,'&nbsp;');
+  s = s.replace(/\\label\{.*?\}/g,'');
+  s = s.replace(/\\ref\{(.*?)\}/g,'[$1]');
+  s = s.replace(/\\cite\{(.*?)\}/g,'[$1]');
+  s = s.replace(/\\footnote\{(.*?)\}/g,'<sup>($1)</sup>');
+  s = s.replace(/\\[a-zA-Z]+\{(.*?)\}/g,'$1');
+  s = s.replace(/\\[a-zA-Z]+/g,'');
+  s = s.replace(/[{}]/g,'');
+  s = s.replace(/\n{2,}/g,'</p><p>');
+  s = '<p>'+s+'</p>';
+  s = s.replace(/<p>\s*<\/p>/g,'');
+  s = s.replace(/\x00M(\d+)\x00/g, (_,i) => {
+    const m = mathSlots[parseInt(i)];
+    try { return katex.renderToString(m.tex.trim(),{displayMode:m.display,throwOnError:false}); }
+    catch { return `<code>${m.tex}</code>`; }
+  });
+  return s;
+}
+
+const syncLatex = debounce(() => {
+  latexOut.innerHTML = renderLatex(latexIn.value);
+  latexInCol.classList.toggle('has-in', latexIn.value.trim().length>0);
+  latexOutCol.classList.toggle('has-out', latexOut.innerHTML.length>0);
+  latexStats.textContent = countStats(latexIn.value);
+  autoSave('latex', latexIn.value);
+}, 150);
+latexIn.addEventListener('input', syncLatex);
+// Immediate UI update for clear button
+latexIn.addEventListener('input', () => {
+  latexInCol.classList.toggle('has-in', latexIn.value.trim().length>0);
+  latexStats.textContent = countStats(latexIn.value);
+});
+document.getElementById('latex-clr').addEventListener('click', () => {
+  latexIn.value=''; latexOut.innerHTML='';
+  latexInCol.classList.remove('has-in'); latexOutCol.classList.remove('has-out');
+  latexStats.textContent=''; localStorage.removeItem('pt-draft-latex'); latexIn.focus();
+});
+document.getElementById('latex-copy').addEventListener('click', function(){ copyText(latexOut.innerText, this); });
+setupDrop(document.getElementById('latex-dual'), document.getElementById('latex-drop'), latexIn);
+
+/* ══════════════════════════════════════
+   MARKDOWN → Rendered
+   ══════════════════════════════════════ */
+const mdIn = document.getElementById('md-in');
+const mdOut = document.getElementById('md-out');
+const mdInCol = document.getElementById('md-in-col');
+const mdOutCol = document.getElementById('md-out-col');
+const mdStats = document.getElementById('md-stats');
+
+function renderMarkdown(src) {
+  if (!src.trim()) return '';
+  const codeBlocks = [];
+  let s = src.replace(/```[\s\S]*?```/g, m => { codeBlocks.push(m); return `\x01C${codeBlocks.length-1}\x01`; });
+  s = s.replace(/`[^`\n]+`/g, m => { codeBlocks.push(m); return `\x01C${codeBlocks.length-1}\x01`; });
+  const mathSlots = [];
+  s = s.replace(/\$\$([\s\S]*?)\$\$/g, (_,tex) => { mathSlots.push({display:true,tex}); return `\x00M${mathSlots.length-1}\x00`; });
+  s = s.replace(/\\\[([\s\S]*?)\\\]/g, (_,tex) => { mathSlots.push({display:true,tex}); return `\x00M${mathSlots.length-1}\x00`; });
+  s = s.replace(/(?<!\$)\$(?!\$)([^\n]*?[^\$])\$/g, (_,tex) => { mathSlots.push({display:false,tex}); return `\x00M${mathSlots.length-1}\x00`; });
+  s = s.replace(/\\\((.*?)\\\)/g, (_,tex) => { mathSlots.push({display:false,tex}); return `\x00M${mathSlots.length-1}\x00`; });
+  s = s.replace(/\x01C(\d+)\x01/g, (_,i) => codeBlocks[parseInt(i)]);
+  let html = marked.parse(s);
+  html = html.replace(/\x00M(\d+)\x00/g, (_,i) => {
+    const m = mathSlots[parseInt(i)];
+    try { return katex.renderToString(m.tex.trim(),{displayMode:m.display,throwOnError:false}); }
+    catch { return `<code>${m.tex}</code>`; }
+  });
+  return html;
+}
+
+const syncMd = debounce(() => {
+  mdOut.innerHTML = renderMarkdown(mdIn.value);
+  mdInCol.classList.toggle('has-in', mdIn.value.trim().length>0);
+  mdOutCol.classList.toggle('has-out', mdOut.innerHTML.length>0);
+  mdStats.textContent = countStats(mdIn.value);
+  autoSave('md', mdIn.value);
+}, 150);
+mdIn.addEventListener('input', syncMd);
+mdIn.addEventListener('input', () => {
+  mdInCol.classList.toggle('has-in', mdIn.value.trim().length>0);
+  mdStats.textContent = countStats(mdIn.value);
+});
+document.getElementById('md-clr').addEventListener('click', () => {
+  mdIn.value=''; mdOut.innerHTML='';
+  mdInCol.classList.remove('has-in'); mdOutCol.classList.remove('has-out');
+  mdStats.textContent=''; localStorage.removeItem('pt-draft-md'); mdIn.focus();
+});
+document.getElementById('md-copy').addEventListener('click', function(){ copyText(mdOut.innerText, this); });
+setupDrop(document.getElementById('md-dual'), document.getElementById('md-drop'), mdIn);
+
+/* ── Restore drafts on load ── */
+restoreDraft('strip', stripIn);
+restoreDraft('latex', latexIn);
+restoreDraft('md', mdIn);
+
+}); // DOMContentLoaded
+</script>
+</body>
+</html>
